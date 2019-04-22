@@ -1,0 +1,81 @@
+from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+import selenium.webdriver.support.ui as ui
+import selenium.webdriver.support.expected_conditions as EC
+from selenium.webdriver.common.by import By
+import time
+
+
+TIMEOUT = 10
+URL = "https://s1.demo.opensourcecms.com/wordpress/wp-login.php"
+driver = None
+
+def launch_chrome(with_options=False):
+    global driver
+    if with_options:
+        options = webdriver.ChromeOptions()
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument("--test-type")
+        #options.binary_location = "/usr/bin/chromium"
+        driver = webdriver.Chrome(chrome_options=options)
+    else:
+        driver = webdriver.Chrome()
+    driver.implicitly_wait(1)
+    driver.get(URL)
+
+
+def take_screenshot():
+    timestamp =  time.time()
+    driver.save_screenshot("screenshot{}.png".format(timestamp))
+
+
+def get_element(element):
+    return ui.WebDriverWait(driver, TIMEOUT).until(EC.presence_of_all_elements_located(By.ID(element)))
+
+
+def perform_login():
+
+    # Enter Login
+    login_txt = driver.find_element_by_id("user_login")
+    login_txt.send_keys("opensourcecms")
+
+    # Enter password
+    password_txt = driver.find_element_by_id("user_pass")
+    password_txt.send_keys("opensourcecms")
+
+    # Click on Login
+    #get_element("wp - submit")
+    driver.find_element_by_id("wp-submit").click()
+
+
+def verify_login_success():
+    # Verify Welcome panel visible
+    #welcome_panel = driver.get_element("welcome - panel")
+    time.sleep(2)
+
+    # Verify nav bar is visible
+
+def click_posts():
+    post_menu = driver.find_element_by_id("menu-posts")
+    post_menu.click()
+
+
+def click_add_new():
+    add_new_link = driver.find_element(By.CSS_SELECTOR, "#menu-posts > ul > li:nth-of-type(3)")
+    add_new_link.click()
+
+
+if __name__ ==  "__main__":
+    print("Selenium Automation Running")
+    try:
+        launch_chrome()
+        perform_login()
+        verify_login_success()
+        click_posts()
+        click_add_new()
+        take_screenshot()
+    except Exception as e:
+        print("Error:", e)
+    finally:
+        if driver:
+            driver.close()
